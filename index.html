@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舒翔的数学游戏 | Shoofly's Math Games</title>
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --accent: #ffe66d;
+            --bg-start: #667eea;
+            --bg-end: #764ba2;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.06;
+            background-image:
+                radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px),
+                radial-gradient(circle at 60% 70%, #fff 1px, transparent 1px),
+                radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px);
+            background-size: 80px 80px, 100px 100px, 120px 120px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            color: white;
+            position: relative;
+        }
+
+        .lang-switch-top {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 24px;
+            padding: 3px;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .lang-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.82em;
+            transition: all 0.25s;
+            background: transparent;
+            color: rgba(255,255,255,0.75);
+            font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+        .lang-btn.active {
+            background: white;
+            color: #5b4bd5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .lang-btn:hover:not(.active) {
+            color: white;
+            background: rgba(255,255,255,0.12);
+        }
+
+        .header .icon-row {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: bounce 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            font-size: 2.6em;
+            font-weight: 900;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 1.15em;
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .header .badge-row {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.9em;
+            color: white;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            background: rgba(255,255,255,0.15);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            color: white;
+        }
+        .progress-label {
+            font-weight: 700;
+            font-size: 0.95em;
+            white-space: nowrap;
+        }
+        .progress-bar-wrapper {
+            flex: 1;
+            min-width: 150px;
+            height: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44bd32);
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .progress-text {
+            font-weight: 700;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        /* Topic Grid */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            padding: 10px 0 40px;
+        }
+
+        /* Topic Card */
+        .topic-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .topic-card:hover:not(.locked) {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+
+        .topic-card.available {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fffe 100%);
+        }
+        .topic-card.available:hover {
+            border-color: #00b894;
+            box-shadow: 0 16px 40px rgba(78, 205, 196, 0.4);
+        }
+        .topic-card.locked {
+            opacity: 0.75;
+            cursor: default;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        .topic-card .card-number {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 3em;
+            font-weight: 900;
+            color: rgba(0,0,0,0.04);
+            line-height: 1;
+        }
+
+        .topic-card .card-emoji {
+            font-size: 2.8em;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .topic-card .card-title {
+            font-size: 1.35em;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #2d3436;
+        }
+
+        .topic-card .card-desc {
+            font-size: 0.9em;
+            color: var(--text-light);
+            line-height: 1.5;
+            flex: 1;
+            margin-bottom: 12px;
+        }
+
+        .topic-card .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 2px;
+        }
+        .difficulty .star { font-size: 0.9em; }
+        .difficulty .star.on { color: #fdcb6e; }
+        .difficulty .star.off { color: #dfe6e9; }
+
+        .status-tag {
+            font-size: 0.78em;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .status-tag.ready {
+            background: #d4fceb;
+            color: #00b894;
+        }
+        .status-tag.coming {
+            background: #f0f0f0;
+            color: #999;
+        }
+        .status-tag.new {
+            background: #ffeaa7;
+            color: #d68910;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Section title */
+        .section-title {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            margin: 10px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            padding: 20px;
+            font-size: 0.85em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8em; }
+            .topics-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 14px;
+            }
+            .topic-card { padding: 16px; border-radius: 16px; }
+            .topic-card .card-emoji { font-size: 2em; }
+            .topic-card .card-title { font-size: 1.1em; }
+            .topic-card .card-desc { font-size: 0.8em; }
+            .lang-switch-top { top: 6px; right: 6px; }
+        }
+        @media (max-width: 480px) {
+            .topics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="lang-switch-top" id="langSwitch">
+                <button class="lang-btn active" data-lang="zh">中文</button>
+                <button class="lang-btn" data-lang="en">English</button>
+            </div>
+            <div class="icon-row">🧮 ✨ 📐</div>
+            <h1 data-t="app.title">舒翔的数学游戏</h1>
+            <p class="subtitle" data-t="app.subtitle">数形结合 · 动手探索 · 轻松理解数学原理</p>
+            <div class="badge-row">
+                <span class="badge" data-t="badge.visual">🎯 可视化学习</span>
+                <span class="badge" data-t="badge.interactive">🎮 互动探索</span>
+                <span class="badge" data-t="badge.progressive">📝 由易到难</span>
+                <span class="badge" data-t="badge.noinstall">👆 无需安装</span>
+            </div>
+        </header>
+
+        <!-- Progress -->
+        <div class="progress-section">
+            <span class="progress-label" data-t="progress.label">📚 课件完成进度</span>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar-fill" id="progressFill" style="width: 8.3%;"></div>
+            </div>
+            <span class="progress-text" id="progressText">1 / 12</span>
+        </div>
+
+        <!-- Available Topics -->
+        <div class="section-title" data-t="section.available">🟢 已完成的课件</div>
+        <div class="topics-grid" id="availableGrid"></div>
+
+        <!-- Coming Soon -->
+        <div class="section-title" data-t="section.coming">🔜 即将推出的课件</div>
+        <div class="topics-grid" id="comingGrid"></div>
+
+        <footer class="footer">
+            <p data-t="footer.text">🌈 舒翔的数学游戏 — 愿每个孩子都能看见数学之美</p>
+        </footer>
+    </div>
+
+    <script>
+    (function() {
+        // ============ LANGUAGE SYSTEM ============
+        const translations = {
+            zh: {
+                'app.title': '舒翔的数学游戏',
+                'app.subtitle': '数形结合 · 动手探索 · 轻松理解数学原理',
+                'badge.visual': '🎯 可视化学习',
+                'badge.interactive': '🎮 互动探索',
+                'badge.progressive': '📝 由易到难',
+                'badge.noinstall': '👆 无需安装',
+                'progress.label': '📚 课件完成进度',
+                'section.available': '🟢 已完成的课件',
+                'section.coming': '🔜 即将推出的课件',
+                'status.ready': '✅ 开始学习',
+                'status.coming': '即将推出',
+                'footer.text': '🌈 舒翔的数学游戏 — 愿每个孩子都能看见数学之美',
+
+                // Topic cards
+                'topic.01.title': '比例尺',
+                'topic.01.desc': '学习如何将现实世界按比例缩小绘制到图纸上，理解长和宽必须同时考虑的奥秘。',
+                'topic.02.title': '分数的认识',
+                'topic.02.desc': '通过分披萨、切蛋糕等生活场景，直观理解分数的含义和大小比较。',
+                'topic.03.title': '分数运算',
+                'topic.03.desc': '可视化分数加减乘除的过程，用面积模型理解通分、约分的原理。',
+                'topic.04.title': '圆的认识与周长面积',
+                'topic.04.desc': '探索圆周率π的奥秘，可视化圆的周长和面积公式的推导过程。',
+                'topic.05.title': '面积与体积',
+                'topic.05.desc': '从平面到立体，理解面积和体积的概念差异，掌握常见图形的计算公式。',
+                'topic.06.title': '角度的认识',
+                'topic.06.desc': '通过量角器互动和角度动画，直观感受锐角、直角、钝角的区别。',
+                'topic.07.title': '百分数',
+                'topic.07.desc': '用进度条和图表直观展示百分数的含义，理解打折、利率等生活中的百分数。',
+                'topic.08.title': '负数的认识与运算',
+                'topic.08.desc': '用温度计和数轴理解负数，可视化正负数加减法的实际意义。',
+                'topic.09.title': '立体图形与展开图',
+                'topic.09.desc': '3D旋转展示正方体、长方体等立体图形，理解展开图与立体图形的关系。',
+                'topic.10.title': '方程入门',
+                'topic.10.desc': '用天平模型理解等式和未知数的概念，掌握简单方程的解法。',
+                'topic.11.title': '单位换算',
+                'topic.11.desc': '通过可视化阶梯理解长度、面积、体积单位的进率关系。',
+                'topic.12.title': '速度·时间·距离',
+                'topic.12.desc': '用动画演示行程问题，理解速度、时间和距离三者之间的关系。',
+            },
+            en: {
+                'app.title': 'Shoofly\'s Math Games',
+                'app.subtitle': 'Visual Learning · Hands-on Exploration · Easy Understanding',
+                'badge.visual': '🎯 Visual Learning',
+                'badge.interactive': '🎮 Interactive',
+                'badge.progressive': '📝 Step by Step',
+                'badge.noinstall': '👆 No Install',
+                'progress.label': '📚 Courseware Progress',
+                'section.available': '🟢 Ready to Play',
+                'section.coming': '🔜 Coming Soon',
+                'status.ready': '✅ Play Now',
+                'status.coming': 'Coming Soon',
+                'footer.text': '🌈 Shoofly\'s Math Games — Every child can see the beauty of math',
+
+                'topic.01.title': 'Map Scale',
+                'topic.01.desc': 'Learn how real-world areas are scaled down onto flat paper, and why both length AND width must be checked.',
+                'topic.02.title': 'Understanding Fractions',
+                'topic.02.desc': 'Visualize fractions through pizza-slicing and cake-cutting scenarios to grasp fraction meanings and comparisons.',
+                'topic.03.title': 'Fraction Operations',
+                'topic.03.desc': 'Visually explore fraction addition, subtraction, multiplication, and division using area models.',
+                'topic.04.title': 'Circles: Circumference & Area',
+                'topic.04.desc': 'Discover the mystery of π and visualize how circle formulas are derived.',
+                'topic.05.title': 'Area & Volume',
+                'topic.05.desc': 'From flat to solid — understand the difference between area and volume, and master common formulas.',
+                'topic.06.title': 'Understanding Angles',
+                'topic.06.desc': 'Interact with a protractor and animated angles to feel the difference between acute, right, and obtuse angles.',
+                'topic.07.title': 'Percentages',
+                'topic.07.desc': 'Use progress bars and charts to visualize percentages — discounts, interest rates, and more.',
+                'topic.08.title': 'Negative Numbers',
+                'topic.08.desc': 'Use thermometers and number lines to understand negative numbers and their operations.',
+                'topic.09.title': '3D Shapes & Nets',
+                'topic.09.desc': 'Rotate cubes, cuboids and more in 3D — master the relationship between nets and solid shapes.',
+                'topic.10.title': 'Introduction to Equations',
+                'topic.10.desc': 'Use a balance scale model to understand equations and unknowns, and solve simple equations.',
+                'topic.11.title': 'Unit Conversion',
+                'topic.11.desc': 'Visualize the step relationships between length, area, and volume unit conversions.',
+                'topic.12.title': 'Speed · Time · Distance',
+                'topic.12.desc': 'Animated travel scenarios to understand the relationship between speed, time, and distance.',
+            }
+        };
+
+        // Topic static data (non-translatable)
+        const topics = [
+            { id: '01', emoji: '🗺️', stars: 3, available: true,  folder: '比例尺' },
+            { id: '02', emoji: '🍕', stars: 2, available: false, folder: '分数的认识' },
+            { id: '03', emoji: '🔢', stars: 3, available: false, folder: '分数运算' },
+            { id: '04', emoji: '⭕', stars: 3, available: false, folder: '圆' },
+            { id: '05', emoji: '📦', stars: 3, available: false, folder: '面积与体积' },
+            { id: '06', emoji: '📐', stars: 2, available: false, folder: '角度' },
+            { id: '07', emoji: '💯', stars: 2, available: false, folder: '百分数' },
+            { id: '08', emoji: '🌡️', stars: 2, available: false, folder: '负数' },
+            { id: '09', emoji: '🎲', stars: 4, available: false, folder: '立体图形' },
+            { id: '10', emoji: '⚖️', stars: 3, available: false, folder: '方程' },
+            { id: '11', emoji: '📏', stars: 2, available: false, folder: '单位换算' },
+            { id: '12', emoji: '🚗', stars: 4, available: false, folder: '速度与行程' },
+        ];
+
+        let currentLang = 'zh';
+
+        function detectLang() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('lang') && translations[params.get('lang')]) {
+                return params.get('lang');
+            }
+            const stored = localStorage.getItem('mathgames-lang');
+            if (stored && translations[stored]) {
+                return stored;
+            }
+            // Detect browser language
+            const navLang = navigator.language || '';
+            if (navLang.startsWith('zh')) return 'zh';
+            if (navLang.startsWith('en')) return 'en';
+            return 'zh';
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('mathgames-lang', lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+
+            // Update toggle buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update page title
+            document.title = t('app.title') + ' | Shoofly\'s Math Games';
+
+            // Update all data-t elements
+            document.querySelectorAll('[data-t]').forEach(el => {
+                const key = el.dataset.t;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Re-render topic cards
+            renderTopicCards();
+
+            // Update progress
+            updateProgress();
+        }
+
+        function t(key) {
+            return translations[currentLang][key] || translations['zh'][key] || key;
+        }
+
+        function getLang() {
+            return currentLang;
+        }
+
+        // ============ RENDER TOPIC CARDS ============
+        function renderTopicCards() {
+            const availableGrid = document.getElementById('availableGrid');
+            const comingGrid = document.getElementById('comingGrid');
+
+            availableGrid.innerHTML = '';
+            comingGrid.innerHTML = '';
+
+            topics.forEach((topic, idx) => {
+                const card = document.createElement(topic.available ? 'a' : 'div');
+                if (topic.available) {
+                    card.href = topic.folder + '/index.html?lang=' + currentLang;
+                    card.className = 'topic-card available';
+                } else {
+                    card.className = 'topic-card locked';
+                }
+
+                card.innerHTML = `
+                    <span class="card-emoji">${topic.emoji}</span>
+                    <span class="card-number">${topic.id}</span>
+                    <span class="card-title">${t('topic.' + topic.id + '.title')}</span>
+                    <span class="card-desc">${t('topic.' + topic.id + '.desc')}</span>
+                    <div class="card-meta">
+                        <div class="difficulty">
+                            ${renderStars(topic.stars)}
+                        </div>
+                        <span class="status-tag ${topic.available ? 'ready' : 'coming'}">
+                            ${topic.available ? t('status.ready') : t('status.coming')}
+                        </span>
+                    </div>
+                `;
+
+                if (topic.available) {
+                    availableGrid.appendChild(card);
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+                    });
+                } else {
+                    comingGrid.appendChild(card);
+                }
+            });
+        }
+
+        function renderStars(count) {
+            let html = '';
+            for (let i = 0; i < 4; i++) {
+                html += `<span class="star ${i < count ? 'on' : 'off'}">⭐</span>`;
+            }
+            return html;
+        }
+
+        function updateProgress() {
+            const available = topics.filter(t => t.available).length;
+            const total = topics.length;
+            const pct = Math.round((available / total) * 100);
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressText').textContent = available + ' / ' + total;
+        }
+
+        // ============ EVENTS ============
+        document.getElementById('langSwitch').addEventListener('click', function(e) {
+            const btn = e.target.closest('.lang-btn');
+            if (!btn) return;
+            setLang(btn.dataset.lang);
+        });
+
+        // ============ INIT ============
+        setLang(detectLang());
+        renderTopicCards();
+        updateProgress();
+    })();
+    </script>
+</body>
+</html>

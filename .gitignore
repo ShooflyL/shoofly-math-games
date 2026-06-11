@@ -1,0 +1,30 @@
+# Claude workspace
+.claude/
+
+# Playwright browser test artifacts
+.playwright-mcp/
+
+# Design documents (private)
+.docs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor/IDE
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python (local dev server testing)
+__pycache__/
+*.pyc
+
+DESIGN.md

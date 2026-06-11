@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>比例尺 | Map Scale — 舒翔的数学游戏</title>
+    <style>
+        :root {
+            --bg: #fdf6ec;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --primary: #4ecdc4;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --accent: #6c5ce7;
+            --border: #e0d5c1;
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===== Top Nav ===== */
+        .top-nav {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .top-nav a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95em;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.12);
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .top-nav a:hover { background: rgba(255,255,255,0.25); }
+        .top-nav h1 { font-size: 1.3em; letter-spacing: 1px; flex: 1; }
+
+        .lang-switch {
+            display: flex;
+            gap: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 2px;
+        }
+        .lang-switch .lang-btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8em;
+            transition: all 0.25s;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-family: inherit;
+        }
+        .lang-switch .lang-btn.active {
+            background: white;
+            color: #2c3e50;
+        }
+        .lang-switch .lang-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.12);
+            color: white;
+        }
+
+        /* ===== Main Container ===== */
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ===== Section Cards ===== */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .section-card h2 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-card h2 .icon { font-size: 1.3em; }
+
+        /* ===== Concept Intro ===== */
+        .concept-intro {
+            background: linear-gradient(135deg, #e8f8f5, #fef9e7);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 16px;
+            font-size: 0.95em;
+        }
+        .concept-intro strong { color: var(--accent); }
+        .key-point {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+        .key-point::before { content: '💡 ' attr(data-prefix); }
+
+        /* ===== Canvas Area ===== */
+        .canvas-wrapper {
+            position: relative;
+            background: #fafaf7;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            margin-bottom: 16px;
+        }
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+        }
+
+        /* ===== Controls ===== */
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .control-group label {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        .control-group input[type="range"] {
+            width: 200px;
+            accent-color: var(--accent);
+        }
+
+        .scenario-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .scenario-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .scenario-btn:hover { border-color: var(--primary); background: #f0fffe; }
+        .scenario-btn.active {
+            border-color: var(--primary);
+            background: #d4fceb;
+            color: #00897b;
+        }
+
+        /* ===== Info Cards ===== */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .info-card .label {
+            font-size: 0.8em;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        .info-card .value {
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+        .info-card .value.big { font-size: 1.6em; }
+        .info-card.fit-yes { background: #d4fceb; }
+        .info-card.fit-no { background: #ffe0e0; }
+        .info-card.fit-yes .value { color: var(--success); }
+        .info-card.fit-no .value { color: var(--danger); }
+
+        /* Dimension check rows */
+        .dim-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            margin: 4px 0;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .dim-check.pass { background: #e8f8f5; color: var(--success); }
+        .dim-check.fail { background: #ffe0e0; color: var(--danger); }
+        .dim-check .status-icon { font-size: 1.2em; }
+
+        /* ===== Quiz Section ===== */
+        .quiz-question {
+            background: #f8f9fa;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+        .quiz-question.correct { border-color: var(--success); background: #e8f8f5; }
+        .quiz-question.wrong { border-color: var(--danger); background: #ffe0e0; }
+        .quiz-question h3 { font-size: 1em; margin-bottom: 10px; }
+        .quiz-question .q-scenario {
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            border: 1px dashed #ccc;
+        }
+        .options-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .option-btn {
+            padding: 10px 18px;
+            border: 2px solid #ddd;
+            border-radius: 24px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+            min-width: 80px;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: #f0edff;
+        }
+        .option-btn:disabled { cursor: default; }
+        .option-btn.chosen-correct {
+            border-color: var(--success);
+            background: #d4fceb;
+            color: var(--success);
+        }
+        .option-btn.chosen-wrong {
+            border-color: var(--danger);
+            background: #ffe0e0;
+            color: var(--danger);
+        }
+        .option-btn.show-correct {
+            border-color: var(--success);
+            background: #e8f8f5;
+        }
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 0.9em;
+            display: none;
+        }
+        .quiz-feedback.show { display: block; }
+        .quiz-feedback.correct-fb { color: var(--success); }
+        .quiz-feedback.wrong-fb { color: var(--danger); }
+
+        .quiz-score {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 700;
+            padding: 16px;
+            background: linear-gradient(135deg, #e8f8f5, #d4fceb);
+            border-radius: 14px;
+            display: none;
+        }
+        .quiz-score.show { display: block; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .main-container { padding: 12px; }
+            .section-card { padding: 16px; border-radius: 14px; }
+            .controls-row { gap: 8px; }
+            .control-group input[type="range"] { width: 140px; }
+            .info-cards { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 500px) {
+            .info-cards { grid-template-columns: 1fr; }
+            .scenario-btns { flex-direction: column; }
+            .top-nav h1 { font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="../index.html" id="backLink">🏠 返回目录</a>
+        <h1 id="pageTitle">🗺️ 比例尺 — 从现实到图纸的魔法</h1>
+        <div class="lang-switch" id="langSwitch">
+            <button class="lang-btn active" data-lang="zh">中文</button>
+            <button class="lang-btn" data-lang="en">English</button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Concept Introduction -->
+        <div class="section-card">
+            <h2><span class="icon">📖</span> <span id="secConceptTitle">什么是比例尺？</span></h2>
+            <div class="concept-intro" id="conceptIntro"></div>
+        </div>
+
+        <!-- Interactive Explorer -->
+        <div class="section-card">
+            <h2><span class="icon">🎮</span> <span id="secExplorerTitle">互动探索：调节比例尺试试吧！</span></h2>
+
+            <div class="scenario-btns" id="scenarioBtns"></div>
+
+            <div class="canvas-wrapper">
+                <canvas id="mainCanvas"></canvas>
+            </div>
+
+            <div class="controls-row">
+                <div class="control-group">
+                    <label id="labelScale">🔧 比例尺 1:<span id="scaleDisplay">300</span></label>
+                    <input type="range" id="scaleSlider" min="50" max="1000" value="300" step="10">
+                </div>
+                <div class="control-group" id="customDims" style="display:none;">
+                    <label id="labelCustomL">长(m): <input type="number" id="customL" value="60" min="5" max="500" style="width:70px;"></label>
+                    <label id="labelCustomW">宽(m): <input type="number" id="customW" value="40" min="5" max="500" style="width:70px;"></label>
+                </div>
+            </div>
+
+            <div class="info-cards">
+                <div class="info-card"><div class="label" id="labelPaperSize">📏 图纸尺寸</div><div class="value" id="paperInfo">30cm × 21cm</div></div>
+                <div class="info-card"><div class="label" id="labelRealObj">🏗️ 实际物体</div><div class="value" id="realInfo">80m × 50m</div></div>
+                <div class="info-card" id="fitCard"><div class="label" id="labelFit">📋 能否画下？</div><div class="value big" id="fitResult">--</div></div>
+                <div class="info-card"><div class="label" id="labelMinScale">📐 最小比例尺</div><div class="value big" id="minScaleInfo">1:267</div></div>
+            </div>
+
+            <div id="dimChecks">
+                <div class="dim-check" id="checkLength"><span class="status-icon">⏳</span><span></span></div>
+                <div class="dim-check" id="checkWidth"><span class="status-icon">⏳</span><span></span></div>
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="section-card" id="quizSection">
+            <h2><span class="icon">📝</span> <span id="secQuizTitle">挑战一下！由易到难的选择题</span></h2>
+            <p style="color:var(--text-light);margin-bottom:16px;" id="quizHint">仔细阅读每个题目，注意长和宽都要检查哦！</p>
+            <div id="quizContainer"></div>
+            <div class="quiz-score" id="quizScore"></div>
+        </div>
+
+        <!-- Tips -->
+        <div class="section-card" style="background:linear-gradient(135deg,#e8f8f5,#fef9e7);">
+            <h2><span class="icon">🌟</span> <span id="secTipsTitle">学习小贴士</span></h2>
+            <ul style="padding-left:20px;font-size:0.9em;color:var(--text-light);" id="tipsList"></ul>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        // ============ LANGUAGE SYSTEM ============
+        const translations = {
+            zh: {
+                // Nav
+                'nav.back': '🏠 返回目录',
+                'nav.title': '🗺️ 比例尺 — 从现实到图纸的魔法',
+
+                // Sections
+                'sec.concept': '什么是比例尺？',
+                'sec.explorer': '互动探索：选择一个场景，调节比例尺试试吧！',
+                'sec.quiz': '挑战一下！由易到难的选择题',
+                'sec.tips': '学习小贴士',
+
+                // Concept intro
+                'concept.p1': '当我们想把一栋大楼、一个操场画在小小的图纸上时，就需要用到<strong>比例尺</strong>。',
+                'concept.p2': '<strong>比例尺 1:200</strong> 表示：图纸上的 <strong>1厘米</strong> = 现实中的 <strong>200厘米 = 2米</strong>。',
+                'concept.p3': '比例尺越大（后一个数越小），图纸上的物体越大；比例尺越小（后一个数越大），图纸上的物体越小。',
+                'keypoint.prefix': '关键要点：',
+                'keypoint.text': '图纸的长宽比例和实际物体的长宽比例往往不一样！所以必须<strong>同时检查长和宽</strong>是否都能放下，只看一个方向是不够的！',
+
+                // Controls
+                'label.scale': '🔧 比例尺 1:',
+                'label.customL': '实际长(m):',
+                'label.customW': '实际宽(m):',
+                'label.paperSize': '📏 图纸尺寸',
+                'label.realObj': '🏗️ 实际物体',
+                'label.fit': '📋 能否画下？',
+                'label.minScale': '📐 最小比例尺',
+                'fit.yes': '✅ 可以！',
+                'fit.no': '❌ 不行',
+
+                // Dimension checks
+                'check.length.ok': '长度：{scaled}cm ≤ {paper}cm，长度方向 OK！',
+                'check.length.fail': '长度：{scaled}cm > {paper}cm，长度方向超出！需要比例尺至少 1:{need}',
+                'check.width.ok': '宽度：{scaled}cm ≤ {paper}cm，宽度方向 OK！',
+                'check.width.fail': '宽度：{scaled}cm > {paper}cm，宽度方向超出！需要比例尺至少 1:{need}',
+
+                // Canvas labels
+                'canvas.paper': '📄 图纸',
+                'canvas.real': '🌍 现实世界',
+                'canvas.length': '长',
+                'canvas.width': '宽',
+                'canvas.scale': '缩小',
+                'canvas.overflow': '超出!',
+                'canvas.fits': '✅ 可以画下！',
+                'canvas.nofit': '❌ 画不下！',
+                'canvas.nofitSub': '部分区域超出图纸',
+
+                // Scenario buttons
+                'scenario.0': '🏟️ 操场 80m×50m',
+                'scenario.1': '🏊 游泳池 50m×25m',
+                'scenario.2': '🌻 花园 30m×30m',
+                'scenario.3': '🏫 教学楼 90m×20m',
+                'scenario.4': '🎨 自定义',
+
+                // Quiz header
+                'quiz.hint': '仔细阅读每个题目，注意长和宽都要检查哦！',
+
+                // Quiz Q1
+                'q1.question': '【第1题 · 简单】操场长80米，宽50米。用1:400的比例尺画在长30厘米、宽21厘米的纸上，能画得下吗？',
+                'q1.hint': '80m=8000cm, 8000÷400=20cm; 50m=5000cm, 5000÷400=12.5cm',
+                'q1.opt0': '能，长和宽都放得下',
+                'q1.opt1': '不能，长度超出',
+                'q1.opt2': '不能，宽度超出',
+                'q1.opt3': '不能，长宽都超出',
+                'q1.explanation': '✅ 正确！长度：8000÷400=20cm ≤ 30cm ✓，宽度：5000÷400=12.5cm ≤ 21cm ✓，两个方向都能放下！',
+
+                // Quiz Q2
+                'q2.question': '【第2题 · 中等】教学楼长100米，宽15米。用1:300的比例尺画在长30厘米、宽20厘米的纸上，能画得下吗？',
+                'q2.hint': '100m=10000cm, 15m=1500cm。分别算算长和宽在图纸上的尺寸。',
+                'q2.opt0': '能，长和宽都放得下',
+                'q2.opt1': '不能，长度超出了',
+                'q2.opt2': '不能，宽度超出了',
+                'q2.opt3': '不能，长宽都超出了',
+                'q2.explanation': '✅ 正确！长度：10000÷300≈33.3cm > 30cm ❌，宽度：1500÷300=5cm ≤ 20cm ✓。虽然宽度绰绰有余，但长度超出了3.3厘米！这就是陷阱——不能只看宽度放下了就以为全都能放下！',
+
+                // Quiz Q3
+                'q3.question': '【第3题 · 中等】一个正方形花园边长60米。要画在长30厘米、宽21厘米的纸上，以下哪个比例尺<strong>最小且可行</strong>？',
+                'q3.hint': '正方形意味着长=宽=60m。分别计算各选项中长和宽需要的尺寸。',
+                'q3.opt0': '1:150',
+                'q3.opt1': '1:200',
+                'q3.opt2': '1:250',
+                'q3.opt3': '1:300',
+                'q3.explanation': '✅ 正确！A: 6000÷150=40cm>30 ❌；B: 6000÷200=30cm=30 ✓但宽6000÷200=30cm>21 ❌；C: 6000÷250=24cm<30 ✓但宽24cm>21 ❌；D: 6000÷300=20cm<30 ✓且宽20cm<21 ✓。正方形长宽相同，但图纸长宽不同，所以宽度成了限制因素！',
+
+                // Quiz Q4
+                'q4.question': '【第4题 · 较难】一个长方形公园长120米，宽80米。要画在长40厘米、宽30厘米的纸上。<strong>最小</strong>需要多大的比例尺？',
+                'q4.hint': '分别计算长和宽各自需要的最小比例尺，然后取较大的那个。',
+                'q4.opt0': '1:200',
+                'q4.opt1': '1:250',
+                'q4.opt2': '1:300',
+                'q4.opt3': '1:350',
+                'q4.explanation': '✅ 正确！长度需要：12000÷40=300（即至少1:300）；宽度需要：8000÷30≈267（即至少1:267）。取最大值 → 1:300。用1:250的话，长度方向12000÷250=48cm>40，放不下！',
+
+                // Quiz Q5
+                'q5.question': '【第5题 · 困难】四位同学在讨论：游泳池长50米宽20米，要用比例尺画在长30厘米宽20厘米的纸上。<strong>谁的说法正确？</strong>',
+                'q5.hint': '逐个验算每位同学的推理。注意检查他们是否同时考虑了长和宽。',
+                'q5.opt0': '小明：用1:200可以，因为5000÷200=25<30且2000÷200=10<20',
+                'q5.opt1': '小红：用1:100可以，因为宽2000÷100=20≤20',
+                'q5.opt2': '小刚：用1:200不可以，因为比例尺太大了',
+                'q5.opt3': '小丽：无法判断，因为不知道纸的方向',
+                'q5.explanation': '✅ 正确！小明的推理最全面：长5000÷200=25cm<30cm ✓，宽2000÷200=10cm<20cm ✓，两个方向都检查了！小红只算了宽，忽略了长5000÷100=50cm>30cm ❌。小刚的推理错误，小丽也不知道纸的方向不影响判断（长30宽20已确定）。',
+
+                // Quiz score
+                'score.perfect': '🏆 太棒了！全部答对！你已经完全掌握了比例尺的奥秘！',
+                'score.great': '🌟 非常好！只差一点就全对了，再复习一下错题吧！',
+                'score.good': '👍 不错！继续加油，注意检查长和宽两个方向哦！',
+                'score.try': '💪 别灰心！比例尺确实容易出错，记住：长和宽都要检查！再试试上面的互动练习吧。',
+
+                // Tips
+                'tips.0': '计算物体在图纸上的尺寸：<strong>实际尺寸（换算成厘米）÷ 比例尺后项</strong>',
+                'tips.1': '例如：80米=8000厘米，比例尺1:200 → 图纸上 8000÷200=<strong>40厘米</strong>',
+                'tips.2': '分别检查 <strong>长</strong> 和 <strong>宽</strong>，两个方向都必须 ≤ 图纸的对应尺寸',
+                'tips.3': '所需最小比例尺 = <strong>max(实际长÷图纸长, 实际宽÷图纸宽)</strong>，取较大的那个！',
+                'tips.4': '如果物体非常细长（或非常宽扁），宽和长需要的比例尺可能差很多，<strong>不能只看一个方向</strong>！',
+            },
+            en: {
+                'nav.back': '🏠 Back to Catalog',
+                'nav.title': '🗺️ Map Scale — Magic from Reality to Paper',
+
+                'sec.concept': 'What is Map Scale?',
+                'sec.explorer': 'Interactive Explorer: Pick a scene and adjust the scale!',
+                'sec.quiz': 'Quiz Time! Easy to Hard',
+                'sec.tips': 'Learning Tips',
+
+                'concept.p1': 'When we want to draw a building or a playground on a small piece of paper, we need to use <strong>scale</strong>.',
+                'concept.p2': '<strong>Scale 1:200</strong> means: <strong>1 cm</strong> on paper = <strong>200 cm = 2 m</strong> in reality.',
+                'concept.p3': 'Larger scale (smaller second number) → bigger on paper. Smaller scale (larger second number) → smaller on paper.',
+                'keypoint.prefix': 'Key Point:',
+                'keypoint.text': 'The paper and the real object often have <strong>different aspect ratios</strong>! You MUST check <strong>BOTH length and width</strong> — checking only one direction is not enough!',
+
+                'label.scale': '🔧 Scale 1:',
+                'label.customL': 'Length (m):',
+                'label.customW': 'Width (m):',
+                'label.paperSize': '📏 Paper Size',
+                'label.realObj': '🏗️ Real Object',
+                'label.fit': '📋 Does it fit?',
+                'label.minScale': '📐 Min Scale Needed',
+                'fit.yes': '✅ Yes!',
+                'fit.no': '❌ No',
+
+                'check.length.ok': 'Length: {scaled}cm ≤ {paper}cm — OK!',
+                'check.length.fail': 'Length: {scaled}cm > {paper}cm — Exceeds! Need scale at least 1:{need}',
+                'check.width.ok': 'Width: {scaled}cm ≤ {paper}cm — OK!',
+                'check.width.fail': 'Width: {scaled}cm > {paper}cm — Exceeds! Need scale at least 1:{need}',
+
+                'canvas.paper': '📄 Paper',
+                'canvas.real': '🌍 Real World',
+                'canvas.length': 'L',
+                'canvas.width': 'W',
+                'canvas.scale': 'Scale down',
+                'canvas.overflow': 'Overflow!',
+                'canvas.fits': '✅ It fits!',
+                'canvas.nofit': '❌ Does not fit!',
+                'canvas.nofitSub': 'Part exceeds the paper',
+
+                'scenario.0': '🏟️ Playground 80m×50m',
+                'scenario.1': '🏊 Pool 50m×25m',
+                'scenario.2': '🌻 Garden 30m×30m',
+                'scenario.3': '🏫 Building 90m×20m',
+                'scenario.4': '🎨 Custom',
+
+                'quiz.hint': 'Read each question carefully — remember to check BOTH length and width!',
+
+                'q1.question': '[Q1 · Easy] A playground is 80m long and 50m wide. Using a scale of 1:400 on paper that is 30cm × 21cm — will it fit?',
+                'q1.hint': '80m=8000cm, 8000÷400=20cm; 50m=5000cm, 5000÷400=12.5cm',
+                'q1.opt0': 'Yes, both length and width fit',
+                'q1.opt1': 'No, length exceeds',
+                'q1.opt2': 'No, width exceeds',
+                'q1.opt3': 'No, both exceed',
+                'q1.explanation': '✅ Correct! Length: 8000÷400=20cm ≤ 30cm ✓. Width: 5000÷400=12.5cm ≤ 21cm ✓. Both dimensions fit!',
+
+                'q2.question': '[Q2 · Medium] A building is 100m long and 15m wide. Scale 1:300 on 30cm × 20cm paper — will it fit?',
+                'q2.hint': '100m=10000cm, 15m=1500cm. Calculate both dimensions on paper.',
+                'q2.opt0': 'Yes, both fit',
+                'q2.opt1': 'No, the length exceeds',
+                'q2.opt2': 'No, the width exceeds',
+                'q2.opt3': 'No, both exceed',
+                'q2.explanation': '✅ Correct! Length: 10000÷300≈33.3cm > 30cm ❌. Width: 1500÷300=5cm ≤ 20cm ✓. Even though the width fits easily, the length is 3.3cm too long! That\'s the trap — you can\'t just check one dimension!',
+
+                'q3.question': '[Q3 · Medium] A square garden is 60m on each side. Which is the <strong>smallest workable scale</strong> for 30cm × 21cm paper?',
+                'q3.hint': 'Square means length = width = 60m. Calculate paper size for each option.',
+                'q3.opt0': '1:150',
+                'q3.opt1': '1:200',
+                'q3.opt2': '1:250',
+                'q3.opt3': '1:300',
+                'q3.explanation': '✅ Correct! A: 6000÷150=40cm>30 ❌. B: 6000÷200=30cm=30 ✓ but width 30cm>21 ❌. C: 6000÷250=24cm<30 ✓ but width 24cm>21 ❌. D: 6000÷300=20cm<30 ✓ and width 20cm<21 ✓. The square has equal sides, but the paper doesn\'t — so width becomes the limiting factor!',
+
+                'q4.question': '[Q4 · Hard] A rectangular park is 120m by 80m. To fit on 40cm × 30cm paper, what is the <strong>minimum</strong> scale needed?',
+                'q4.hint': 'Calculate the minimum scale for each dimension, then take the larger value.',
+                'q4.opt0': '1:200',
+                'q4.opt1': '1:250',
+                'q4.opt2': '1:300',
+                'q4.opt3': '1:350',
+                'q4.explanation': '✅ Correct! Length needs: 12000÷40=300 (at least 1:300). Width needs: 8000÷30≈267 (at least 1:267). Take the max → 1:300. With 1:250, length would be 12000÷250=48cm > 40 — doesn\'t fit!',
+
+                'q5.question': '[Q5 · Hard] Four students discuss: a pool 50m×20m needs to fit on 30cm×20cm paper. <strong>Who is correct?</strong>',
+                'q5.hint': 'Check each student\'s reasoning. Pay attention to whether they checked BOTH dimensions.',
+                'q5.opt0': 'Ming: 1:200 works because 5000÷200=25<30 AND 2000÷200=10<20',
+                'q5.opt1': 'Hong: 1:100 works because width 2000÷100=20≤20',
+                'q5.opt2': 'Gang: 1:200 does NOT work because the scale is too large',
+                'q5.opt3': 'Li: Can\'t decide without knowing paper orientation',
+                'q5.explanation': '✅ Correct! Ming checked both dimensions: length 5000÷200=25cm<30cm ✓ AND width 2000÷200=10cm<20cm ✓. Hong only checked width — length 5000÷100=50cm>30cm ❌. Gang\'s reasoning is wrong. Li is wrong — paper dimensions (30×20) are already given.',
+
+                'score.perfect': '🏆 Perfect! You got them all right! You\'ve mastered map scale!',
+                'score.great': '🌟 Great job! Almost perfect — review the ones you missed!',
+                'score.good': '👍 Good work! Keep practicing — remember to check BOTH length and width!',
+                'score.try': '💪 Don\'t give up! Map scale is tricky. Remember: always check BOTH dimensions! Try the explorer again.',
+
+                'tips.0': 'To find the size on paper: <strong>real size (converted to cm) ÷ scale denominator</strong>',
+                'tips.1': 'Example: 80m = 8000cm, scale 1:200 → on paper: 8000÷200 = <strong>40cm</strong>',
+                'tips.2': 'Check <strong>length</strong> AND <strong>width</strong> separately — BOTH must be ≤ the paper\'s corresponding dimension',
+                'tips.3': 'Minimum scale needed = <strong>max(real length ÷ paper length, real width ÷ paper width)</strong> — take the larger one!',
+                'tips.4': 'If the object is very long and narrow (or wide and flat), the scales needed for each dimension can be very different — <strong>never check only one direction</strong>!',
+            }
+        };
+
+        let currentLang = 'zh';
+
+        function detectLang() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('lang') && translations[params.get('lang')]) {
+                return params.get('lang');
+            }
+            const stored = localStorage.getItem('mathgames-lang');
+            if (stored && translations[stored]) return stored;
+            const navLang = navigator.language || '';
+            if (navLang.startsWith('zh')) return 'zh';
+            if (navLang.startsWith('en')) return 'en';
+            return 'zh';
+        }
+
+        function t(key, replacements) {
+            let text = translations[currentLang][key] || translations['zh'][key] || key;
+            if (replacements) {
+                Object.keys(replacements).forEach(k => {
+                    text = text.replace('{' + k + '}', replacements[k]);
+                });
+            }
+            return text;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('mathgames-lang', lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+
+            // Toggle buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update back link
+            document.getElementById('backLink').href = '../index.html?lang=' + lang;
+
+            // Update all static UI text
+            document.getElementById('pageTitle').textContent = t('nav.title');
+
+            // Concept section
+            document.getElementById('secConceptTitle').textContent = t('sec.concept');
+            document.getElementById('conceptIntro').innerHTML = `
+                <p>${t('concept.p1')}</p>
+                <p style="margin-top:6px;">${t('concept.p2')}</p>
+                <p style="margin-top:6px;">${t('concept.p3')}</p>
+                <div class="key-point" data-prefix="${t('keypoint.prefix')}">${t('keypoint.text')}</div>
+            `;
+
+            // Explorer section
+            document.getElementById('secExplorerTitle').textContent = t('sec.explorer');
+
+            // Labels
+            // Update scale label (preserve inner span)
+            const scaleLabel = document.getElementById('labelScale');
+            const scaleSpan = document.getElementById('scaleDisplay');
+            scaleLabel.innerHTML = t('label.scale') + '<span id="scaleDisplay">' + (scaleSpan ? scaleSpan.textContent : '300') + '</span>';
+
+            document.getElementById('labelPaperSize').textContent = t('label.paperSize');
+            document.getElementById('labelRealObj').textContent = t('label.realObj');
+            document.getElementById('labelFit').textContent = t('label.fit');
+            document.getElementById('labelMinScale').textContent = t('label.minScale');
+            document.getElementById('labelCustomL').innerHTML = t('label.customL') + ' <input type="number" id="customL" value="60" min="5" max="500" style="width:70px;">';
+            document.getElementById('labelCustomW').innerHTML = t('label.customW') + ' <input type="number" id="customW" value="40" min="5" max="500" style="width:70px;">';
+
+            // Quiz section
+            document.getElementById('secQuizTitle').textContent = t('sec.quiz');
+            document.getElementById('quizHint').textContent = t('quiz.hint');
+
+            // Tips section
+            document.getElementById('secTipsTitle').textContent = t('sec.tips');
+            const tipsList = document.getElementById('tipsList');
+            tipsList.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const li = document.createElement('li');
+                li.style.marginBottom = '6px';
+                li.innerHTML = t('tips.' + i);
+                tipsList.appendChild(li);
+            }
+
+            // Re-render scenario buttons
+            renderScenarioBtns();
+
+            // Rebuild quiz
+            buildQuiz();
+
+            // Re-render canvas
+            updateUI();
+        }
+
+        // ============ SCENARIO DATA ============
+        const scenarios = [
+            { nameKey: 'scenario.0', realL: 80, realW: 50, paperL: 30, paperW: 21 },
+            { nameKey: 'scenario.1', realL: 50, realW: 25, paperL: 30, paperW: 21 },
+            { nameKey: 'scenario.2', realL: 30, realW: 30, paperL: 30, paperW: 21 },
+            { nameKey: 'scenario.3', realL: 90, realW: 20, paperL: 30, paperW: 21 },
+            { nameKey: 'scenario.4', realL: 60, realW: 40, paperL: 30, paperW: 21 },
+        ];
+
+        let currentScenario = 0;
+        let currentScale = 300;
+        let isCustom = false;
+
+        // ============ CANVAS (Responsive) ============
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_BASE_W = 900;
+        const CANVAS_BASE_H = 380;
+        const CANVAS_W = CANVAS_BASE_W;   // design-space alias (used by draw)
+        const CANVAS_H = CANVAS_BASE_H;
+        const CANVAS_MIN_W = 260;
+        const CANVAS_MAX_W = 900;
+        const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+        let canvasScale = 1;   // computed each resize
+
+        function setupCanvas() {
+            const wrapper = canvas.parentElement;
+            const rawW = wrapper.clientWidth;
+            const w = Math.min(CANVAS_MAX_W, Math.max(CANVAS_MIN_W, rawW));
+            canvasScale = w / CANVAS_BASE_W;
+            canvas.style.width = w + 'px';
+            canvas.style.height = (CANVAS_BASE_H * canvasScale) + 'px';
+            canvas.width = Math.round(CANVAS_BASE_W * canvasScale * DPR);
+            canvas.height = Math.round(CANVAS_BASE_H * canvasScale * DPR);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(canvasScale * DPR, canvasScale * DPR);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+            const s = scenarios[currentScenario];
+            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
+            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
+            const paperCmH = s.paperL;
+            const paperCmW = s.paperW;
+
+            // ---- Layout: vertically centered, paper left / real right ----
+            const marginTop = 28;
+            const marginBottom = 28;
+            const usableH = CANVAS_H - marginTop - marginBottom;
+
+            // Paper area (left ~40%)
+            const paperAreaX = 120;
+            const paperAreaW = 260;
+            const paperAreaH = usableH * 0.82;
+            const paperAreaY = marginTop + (usableH - paperAreaH) / 2;
+
+            // Paper within its area (fit proportionally)
+            const paperAspect = paperCmH / paperCmW;
+            let paperW_px, paperH_px;
+            if (paperAreaW / paperAreaH > paperAspect) {
+                paperH_px = paperAreaH * 0.82;
+                paperW_px = paperH_px / paperAspect;
+            } else {
+                paperW_px = paperAreaW * 0.82;
+                paperH_px = paperW_px * paperAspect;
+            }
+            const paperX = paperAreaX + (paperAreaW - paperW_px) / 2;
+            const paperY = marginTop + (usableH - paperH_px) / 2;
+            const pxPerCm = paperH_px / paperCmH;
+
+            // Scaled object dimensions on paper (pixels)
+            const scaledObjL_cm = realL * 100 / currentScale;
+            const scaledObjW_cm = realW * 100 / currentScale;
+            const objH_px = scaledObjL_cm * pxPerCm;
+            const objW_px = scaledObjW_cm * pxPerCm;
+            // Object is centered over the paper (same center point as paper)
+            const objX = paperX + (paperW_px - objW_px) / 2;
+            const objY = paperY + (paperH_px - objH_px) / 2;
+
+            // Real world area (right ~55%)
+            const realAreaX = paperAreaX + paperAreaW + 50;
+            const realAreaW = CANVAS_W - realAreaX - 24;
+            const realAreaH = usableH * 0.82;
+            const realAreaY = marginTop + (usableH - realAreaH) / 2;
+
+            // Real object within its area
+            const realAspect = realW / realL;
+            let realObjW_px, realObjH_px;
+            const maxRealW = realAreaW * 0.72;
+            const maxRealH = realAreaH * 0.72;
+            if (maxRealW / maxRealH > realAspect) {
+                realObjH_px = maxRealH;
+                realObjW_px = realObjH_px * realAspect;
+            } else {
+                realObjW_px = maxRealW;
+                realObjH_px = realObjW_px / realAspect;
+            }
+            // Real object also centered vertically in the canvas
+            const realObjX = realAreaX + (realAreaW - realObjW_px) / 2;
+            const realObjY = marginTop + (usableH - realObjH_px) / 2;
+
+            const fitsW = objW_px <= paperW_px + 0.5;
+            const fitsH = objH_px <= paperH_px + 0.5;
+            const fitsBoth = fitsW && fitsH;
+
+            // Background
+            ctx.fillStyle = '#fafaf7';
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+            // Paper area label (just above paper)
+            ctx.fillStyle = '#555';
+            ctx.font = 'bold 14px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(t('canvas.paper') + ' (' + paperCmH + 'cm × ' + paperCmW + 'cm)', paperX + paperW_px / 2, paperY - 12);
+
+            // Paper shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            ctx.beginPath();
+            ctx.roundRect(paperX + 4, paperY + 4, paperW_px, paperH_px, 4);
+            ctx.fill();
+
+            // Paper fill (drawn BEFORE object so object appears on top)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(paperX, paperY, paperW_px, paperH_px, 4);
+            ctx.fill();
+
+            // Grid
+            ctx.strokeStyle = '#e8e8e8';
+            ctx.lineWidth = 0.5;
+            const gridStep = paperW_px / paperCmW;
+            for (let x = paperX + gridStep; x < paperX + paperW_px; x += gridStep) {
+                ctx.beginPath();
+                ctx.moveTo(x, paperY);
+                ctx.lineTo(x, paperY + paperH_px);
+                ctx.stroke();
+            }
+            const gridStepH = paperH_px / paperCmH;
+            for (let y = paperY + gridStepH; y < paperY + paperH_px; y += gridStepH) {
+                ctx.beginPath();
+                ctx.moveTo(paperX, y);
+                ctx.lineTo(paperX + paperW_px, y);
+                ctx.stroke();
+            }
+
+            // Scaled object — drawn ON TOP of paper, fully visible, never clipped
+            const objColor = fitsBoth ? 'rgba(46, 204, 113, 0.40)' : 'rgba(231, 76, 60, 0.30)';
+            const objStrokeColor = fitsBoth ? '#27ae60' : '#e74c3c';
+
+            ctx.fillStyle = objColor;
+            ctx.fillRect(objX, objY, objW_px, objH_px);
+            ctx.strokeStyle = objStrokeColor;
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 3]);
+            ctx.strokeRect(objX, objY, objW_px, objH_px);
+            ctx.setLineDash([]);
+
+            // ---- Paper Border (on top of object, green=fit, red=not) ----
+            ctx.strokeStyle = fitsBoth ? '#27ae60' : '#e74c3c';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.roundRect(paperX, paperY, paperW_px, paperH_px, 4);
+            ctx.stroke();
+
+            // ---- Overflow portions: brighter red + "overflow" markers ----
+            if (!fitsBoth) {
+                const overColor = 'rgba(231, 76, 60, 0.50)';
+                const overStroke = '#c0392b';
+                ctx.font = 'bold 11px "Microsoft YaHei", "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+
+                if (objY < paperY) {
+                    const oh = paperY - objY;
+                    ctx.fillStyle = overColor;
+                    ctx.fillRect(objX, objY, objW_px, oh);
+                    ctx.setLineDash([]);
+                    ctx.strokeStyle = overStroke;
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(objX, objY, objW_px, oh);
+                    if (oh > 16) {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText('⬆ ' + t('canvas.overflow'), objX + objW_px / 2, objY + oh / 2 + 4);
+                    }
+                }
+                if (objY + objH_px > paperY + paperH_px) {
+                    const oTop = paperY + paperH_px;
+                    const oh = (objY + objH_px) - oTop;
+                    ctx.fillStyle = overColor;
+                    ctx.fillRect(objX, oTop, objW_px, oh);
+                    ctx.setLineDash([]);
+                    ctx.strokeStyle = overStroke;
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(objX, oTop, objW_px, oh);
+                    if (oh > 16) {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText('⬇ ' + t('canvas.overflow'), objX + objW_px / 2, oTop + oh / 2 + 4);
+                    }
+                }
+                if (objX < paperX) {
+                    const ow = paperX - objX;
+                    const cTop = Math.max(objY, paperY);
+                    const cH = Math.min(objY + objH_px, paperY + paperH_px) - cTop;
+                    if (cH > 0) {
+                        ctx.fillStyle = overColor;
+                        ctx.fillRect(objX, cTop, ow, cH);
+                        ctx.setLineDash([]);
+                        ctx.strokeStyle = overStroke;
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(objX, cTop, ow, cH);
+                        if (ow > 24) {
+                            ctx.fillStyle = '#fff';
+                            ctx.fillText(t('canvas.overflow'), objX + ow / 2, cTop + cH / 2 + 4);
+                        }
+                    }
+                }
+                if (objX + objW_px > paperX + paperW_px) {
+                    const oLeft = paperX + paperW_px;
+                    const ow = (objX + objW_px) - oLeft;
+                    const cTop = Math.max(objY, paperY);
+                    const cH = Math.min(objY + objH_px, paperY + paperH_px) - cTop;
+                    if (cH > 0) {
+                        ctx.fillStyle = overColor;
+                        ctx.fillRect(oLeft, cTop, ow, cH);
+                        ctx.setLineDash([]);
+                        ctx.strokeStyle = overStroke;
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(oLeft, cTop, ow, cH);
+                        if (ow > 24) {
+                            ctx.fillStyle = '#fff';
+                            ctx.fillText(t('canvas.overflow'), oLeft + ow / 2, cTop + cH / 2 + 4);
+                        }
+                    }
+                }
+            }
+
+            // ---- Object Dimension Labels (compact) ----
+            ctx.fillStyle = '#2d3436';
+            ctx.font = 'bold 12px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+
+            // Length label on left
+            const labelLX = Math.max(8, objX - 30);
+            const labelLY = objY + objH_px / 2;
+            ctx.fillText(t('canvas.length') + ' ' + scaledObjL_cm.toFixed(1) + 'cm', labelLX, labelLY);
+            ctx.strokeStyle = '#aaa';
+            ctx.lineWidth = 0.8;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(labelLX + 18, labelLY + 2);
+            ctx.lineTo(objX, labelLY + 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Width label on bottom
+            const labelWY = Math.min(CANVAS_H - 8, objY + objH_px + 20);
+            ctx.fillText(t('canvas.width') + ' ' + scaledObjW_cm.toFixed(1) + 'cm', objX + objW_px / 2, labelWY);
+            ctx.strokeStyle = '#aaa';
+            ctx.lineWidth = 0.8;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(objX + objW_px / 2, labelWY - 10);
+            ctx.lineTo(objX + objW_px / 2, objY + objH_px);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // ---- Paper Dimension Annotations ----
+            ctx.fillStyle = '#888';
+            ctx.font = '10px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(paperCmH + 'cm', paperX + paperW_px + 6, paperY + paperH_px / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText(paperCmW + 'cm', paperX + paperW_px / 2, paperY + paperH_px + 14);
+
+            // ---- Real World Label ----
+            ctx.fillStyle = '#555';
+            ctx.font = 'bold 14px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(t('canvas.real'), realAreaX + realAreaW / 2, realObjY - 50);
+
+            // ---- Real Object Drawing ----
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            ctx.fillRect(realObjX + 3, realObjY + 3, realObjW_px, realObjH_px);
+            ctx.fillStyle = '#74b9ff';
+            ctx.strokeStyle = '#0984e3';
+            ctx.lineWidth = 2.5;
+            ctx.fillRect(realObjX, realObjY, realObjW_px, realObjH_px);
+            ctx.strokeRect(realObjX, realObjY, realObjW_px, realObjH_px);
+
+            // Real object labels
+            ctx.fillStyle = '#2d3436';
+            ctx.font = 'bold 13px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(t('canvas.length') + ' ' + realL + 'm', realObjX + realObjW_px / 2, realObjY - 8);
+            ctx.fillText(t('canvas.width') + ' ' + realW + 'm', realObjX + realObjW_px + 16, realObjY + realObjH_px / 2);
+
+            // ---- Connecting Arrow (paper center → real object center) ----
+            const arrowStartX = paperX + paperW_px + 8;
+            const arrowEndX = realObjX - 8;
+            const arrowY = marginTop + usableH / 2;
+            if (arrowEndX - arrowStartX > 50) {
+                ctx.strokeStyle = '#6c5ce7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.moveTo(arrowStartX, arrowY);
+                ctx.lineTo(arrowEndX - 15, arrowY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#6c5ce7';
+                ctx.beginPath();
+                ctx.moveTo(arrowEndX, arrowY);
+                ctx.lineTo(arrowEndX - 12, arrowY - 6);
+                ctx.lineTo(arrowEndX - 12, arrowY + 6);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#6c5ce7';
+                ctx.font = 'bold 13px "Microsoft YaHei", "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                const midX = (arrowStartX + arrowEndX) / 2;
+                ctx.fillText('1:' + currentScale, midX, arrowY - 14);
+                ctx.fillText(t('canvas.scale'), midX, arrowY + 20);
+            }
+
+            // ---- Fit Status Badge (bottom center) ----
+            const badgeX = CANVAS_W / 2;
+            const badgeY = CANVAS_H - 6;
+            ctx.font = 'bold 16px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            if (fitsBoth) {
+                ctx.fillStyle = '#27ae60';
+                ctx.fillText(t('canvas.fits'), badgeX, badgeY);
+            } else {
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText(t('canvas.nofit') + ' — ' + t('canvas.nofitSub'), badgeX, badgeY);
+            }
+        }
+
+        // ============ UPDATE UI ============
+        function updateUI() {
+            const s = scenarios[currentScenario];
+            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
+            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
+            const paperL = s.paperL;
+            const paperW = s.paperW;
+
+            document.getElementById('scaleDisplay').textContent = currentScale;
+            document.getElementById('scaleSlider').value = currentScale;
+            document.getElementById('paperInfo').textContent = paperL + 'cm × ' + paperW + 'cm';
+            document.getElementById('realInfo').textContent = realL + 'm × ' + realW + 'm';
+
+            const scaledL = realL * 100 / currentScale;
+            const scaledW = realW * 100 / currentScale;
+            const fitsL = scaledL <= paperL;
+            const fitsW = scaledW <= paperW;
+            const fitsBoth = fitsL && fitsW;
+            const minScaleL = Math.ceil(realL * 100 / paperL);
+            const minScaleW = Math.ceil(realW * 100 / paperW);
+            const minScale = Math.max(minScaleL, minScaleW);
+
+            const fitResult = document.getElementById('fitResult');
+            const fitCard = document.getElementById('fitCard');
+            if (fitsBoth) {
+                fitResult.textContent = t('fit.yes');
+                fitResult.style.color = '#27ae60';
+                fitCard.className = 'info-card fit-yes';
+            } else {
+                fitResult.textContent = t('fit.no');
+                fitResult.style.color = '#e74c3c';
+                fitCard.className = 'info-card fit-no';
+            }
+            document.getElementById('minScaleInfo').textContent = '1:' + minScale;
+
+            // Dimension checks
+            const checkL = document.getElementById('checkLength');
+            const checkW = document.getElementById('checkWidth');
+            if (fitsL) {
+                checkL.className = 'dim-check pass';
+                checkL.querySelector('.status-icon').textContent = '✅';
+                checkL.querySelector('span:last-child').textContent =
+                    t('check.length.ok', { scaled: scaledL.toFixed(1), paper: paperL.toString() });
+            } else {
+                checkL.className = 'dim-check fail';
+                checkL.querySelector('.status-icon').textContent = '❌';
+                checkL.querySelector('span:last-child').textContent =
+                    t('check.length.fail', { scaled: scaledL.toFixed(1), paper: paperL.toString(), need: minScaleL.toString() });
+            }
+            if (fitsW) {
+                checkW.className = 'dim-check pass';
+                checkW.querySelector('.status-icon').textContent = '✅';
+                checkW.querySelector('span:last-child').textContent =
+                    t('check.width.ok', { scaled: scaledW.toFixed(1), paper: paperW.toString() });
+            } else {
+                checkW.className = 'dim-check fail';
+                checkW.querySelector('.status-icon').textContent = '❌';
+                checkW.querySelector('span:last-child').textContent =
+                    t('check.width.fail', { scaled: scaledW.toFixed(1), paper: paperW.toString(), need: minScaleW.toString() });
+            }
+
+            if (!fitsBoth && (fitsL || fitsW)) {
+                const problemCheck = fitsL ? checkW : checkL;
+                problemCheck.style.animation = 'none';
+                problemCheck.offsetHeight;
+                problemCheck.style.animation = 'pulse 0.5s ease-in-out 3';
+            }
+
+            draw();
+        }
+
+        // ============ SCENARIO BUTTONS ============
+        function renderScenarioBtns() {
+            const container = document.getElementById('scenarioBtns');
+            container.innerHTML = '';
+            scenarios.forEach((s, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'scenario-btn' + (i === currentScenario ? ' active' : '');
+                btn.dataset.scenario = i;
+                btn.textContent = t(s.nameKey);
+                container.appendChild(btn);
+            });
+        }
+
+        document.getElementById('scenarioBtns').addEventListener('click', function(e) {
+            const btn = e.target.closest('.scenario-btn');
+            if (!btn) return;
+            selectScenario(parseInt(btn.dataset.scenario));
+        });
+
+        function selectScenario(idx) {
+            currentScenario = idx;
+            isCustom = (idx === 4);
+            document.getElementById('customDims').style.display = isCustom ? 'flex' : 'none';
+
+            document.querySelectorAll('.scenario-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === idx);
+            });
+
+            const s = scenarios[idx];
+            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
+            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
+            const minScale = Math.max(
+                Math.ceil(realL * 100 / s.paperL),
+                Math.ceil(realW * 100 / s.paperW)
+            );
+            currentScale = Math.max(50, Math.ceil((minScale + 20) / 10) * 10);
+            updateUI();
+        }
+
+        // ============ SLIDER ============
+        document.getElementById('scaleSlider').addEventListener('input', function() {
+            currentScale = parseInt(this.value);
+            updateUI();
+        });
+
+        // Custom dims listeners (delegated since inputs are recreated)
+        document.addEventListener('input', function(e) {
+            if ((e.target.id === 'customL' || e.target.id === 'customW') && isCustom) {
+                updateUI();
+            }
+        });
+
+        // ============ QUIZ ============
+        let quizAnswered = [];
+        let quizScoreCount = 0;
+
+        function buildQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            quizAnswered = [];
+            quizScoreCount = 0;
+            document.getElementById('quizScore').className = 'quiz-score';
+
+            for (let qi = 1; qi <= 5; qi++) {
+                const div = document.createElement('div');
+                div.className = 'quiz-question';
+                div.id = 'q' + qi;
+
+                const optionsHtml = [0, 1, 2, 3].map(oi => {
+                    const letter = String.fromCharCode(65 + oi);
+                    const optText = t('q' + qi + '.opt' + oi);
+                    return `<button class="option-btn" data-q="${qi}" data-o="${oi}">${letter}. ${optText}</button>`;
+                }).join('');
+
+                div.innerHTML = `
+                    <h3>${t('q' + qi + '.question')}</h3>
+                    <div class="q-scenario">💡 ${t('q' + qi + '.hint')}</div>
+                    <div class="options-row">${optionsHtml}</div>
+                    <div class="quiz-feedback" id="fb${qi}"></div>
+                `;
+
+                container.appendChild(div);
+            }
+
+            container.addEventListener('click', function(e) {
+                const btn = e.target.closest('.option-btn');
+                if (!btn || btn.disabled) return;
+                answerQuestion(parseInt(btn.dataset.q), parseInt(btn.dataset.o));
+            });
+        }
+
+        // Quiz correct answers
+        const quizCorrect = { 1: 0, 2: 1, 3: 3, 4: 2, 5: 0 };
+
+        function answerQuestion(qi, oi) {
+            if (quizAnswered.includes(qi)) return;
+            quizAnswered.push(qi);
+
+            const isCorrect = (oi === quizCorrect[qi]);
+            const qDiv = document.getElementById('q' + qi);
+            const fb = document.getElementById('fb' + qi);
+
+            const buttons = qDiv.querySelectorAll('.option-btn');
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === oi && isCorrect) btn.classList.add('chosen-correct');
+                else if (i === oi && !isCorrect) btn.classList.add('chosen-wrong');
+                if (i === quizCorrect[qi] && !isCorrect) btn.classList.add('show-correct');
+            });
+
+            if (isCorrect) {
+                quizScoreCount++;
+                qDiv.classList.add('correct');
+                fb.className = 'quiz-feedback show correct-fb';
+            } else {
+                qDiv.classList.add('wrong');
+                fb.className = 'quiz-feedback show wrong-fb';
+            }
+            fb.textContent = t('q' + qi + '.explanation');
+
+            if (quizAnswered.length === 5) showFinalScore();
+        }
+
+        function showFinalScore() {
+            const scoreDiv = document.getElementById('quizScore');
+            scoreDiv.className = 'quiz-score show';
+            const total = 5;
+
+            let key;
+            if (quizScoreCount === total) key = 'score.perfect';
+            else if (quizScoreCount >= total - 1) key = 'score.great';
+            else if (quizScoreCount >= total - 2) key = 'score.good';
+            else key = 'score.try';
+
+            scoreDiv.innerHTML = `
+                ${t(key)}
+                <br><span style="font-size:0.85em;font-weight:400;">${currentLang === 'zh' ? '得分' : 'Score'}: ${quizScoreCount} / ${total}</span>
+            `;
+            scoreDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ============ LANG SWITCH ============
+        document.getElementById('langSwitch').addEventListener('click', function(e) {
+            const btn = e.target.closest('.lang-btn');
+            if (!btn) return;
+            setLang(btn.dataset.lang);
+        });
+
+        // ============ INIT ============
+        function init() {
+            setupCanvas();
+            setLang(detectLang());
+            selectScenario(0);
+
+            // Re-bind custom inputs after initial render
+            document.addEventListener('input', function(e) {
+                if ((e.target.id === 'customL' || e.target.id === 'customW') && isCustom) {
+                    updateUI();
+                }
+            });
+        }
+
+        // Responsive: use ResizeObserver on canvas wrapper (with fallback)
+        const canvasWrapperEl = canvas.parentElement;
+        if (window.ResizeObserver) {
+            let resizeTO;
+            new ResizeObserver(() => {
+                clearTimeout(resizeTO);
+                resizeTO = setTimeout(() => { setupCanvas(); draw(); }, 100);
+            }).observe(canvasWrapperEl);
+        } else {
+            window.addEventListener('resize', () => {
+                setTimeout(() => { setupCanvas(); draw(); }, 100);
+            });
+        }
+
+        const pulseStyle = document.createElement('style');
+        pulseStyle.textContent = '@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }';
+        document.head.appendChild(pulseStyle);
+
+        init();
+    })();
+    </script>
+</body>
+</html>

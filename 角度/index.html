@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon — 舒翔的数学游戏</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 40px 30px;
+            max-width: 480px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .emoji { font-size: 72px; margin-bottom: 16px; }
+        h1 { font-size: 2em; margin-bottom: 8px; letter-spacing: 2px; }
+        .subtitle { font-size: 1.1em; opacity: 0.8; margin-bottom: 24px; }
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4ecdc4;
+            border-radius: 4px;
+            width: 5%;
+            animation: loading 2s ease-in-out infinite;
+        }
+        @keyframes loading {
+            0% { width: 5%; }
+            50% { width: 25%; }
+            100% { width: 5%; }
+        }
+        .btn-back {
+            display: inline-block;
+            padding: 12px 28px;
+            background: white;
+            color: #5b4bd5;
+            border-radius: 24px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1em;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn-back:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+        .lang-switch { margin-top: 20px; display: flex; gap: 4px; justify-content: center; }
+        .lang-switch button {
+            padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 16px;
+            background: transparent; color: rgba(255,255,255,0.7); cursor: pointer;
+            font-weight: 600; font-size: 0.82em; font-family: inherit;
+        }
+        .lang-switch button.active { background: white; color: #5b4bd5; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="emoji" id="topicEmoji">🚧</div>
+        <h1 id="topicTitle">课件开发中</h1>
+        <p class="subtitle" id="topicSubtitle">这个课件正在精心制作中，很快就会上线！</p>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <a href="../index.html" class="btn-back" id="backLink">🏠 返回目录</a>
+        <div class="lang-switch" id="langSwitch">
+            <button class="lang-btn active" data-lang="zh">中文</button>
+            <button class="lang-btn" data-lang="en">English</button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            zh: {
+                'placeholder.title': '课件开发中',
+                'placeholder.subtitle': '这个课件正在精心制作中，很快就会上线！',
+                'placeholder.back': '🏠 返回目录',
+            },
+            en: {
+                'placeholder.title': 'Under Development',
+                'placeholder.subtitle': 'This module is being crafted with care — coming soon!',
+                'placeholder.back': '🏠 Back to Catalog',
+            }
+        };
+
+        function detectLang() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('lang') && translations[params.get('lang')]) return params.get('lang');
+            const stored = localStorage.getItem('mathgames-lang');
+            if (stored && translations[stored]) return stored;
+            const navLang = navigator.language || '';
+            if (navLang.startsWith('zh')) return 'zh';
+            if (navLang.startsWith('en')) return 'en';
+            return 'zh';
+        }
+
+        function setLang(lang) {
+            localStorage.setItem('mathgames-lang', lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+            document.getElementById('topicTitle').textContent = translations[lang]['placeholder.title'];
+            document.getElementById('topicSubtitle').textContent = translations[lang]['placeholder.subtitle'];
+            document.getElementById('backLink').textContent = translations[lang]['placeholder.back'];
+            document.getElementById('backLink').href = '../index.html?lang=' + lang;
+        }
+
+        document.getElementById('langSwitch').addEventListener('click', function(e) {
+            const btn = e.target.closest('.lang-btn');
+            if (!btn) return;
+            setLang(btn.dataset.lang);
+        });
+
+        setLang(detectLang());
+    </script>
+</body>
+</html>
