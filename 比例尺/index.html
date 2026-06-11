@@ -718,7 +718,7 @@
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
         const CANVAS_BASE_W = 900;
-        const CANVAS_BASE_H = 380;
+        const CANVAS_BASE_H = 560;
         const CANVAS_W = CANVAS_BASE_W;   // design-space alias (used by draw)
         const CANVAS_H = CANVAS_BASE_H;
         const CANVAS_MIN_W = 260;
@@ -749,24 +749,24 @@
             const paperCmW = s.paperW;
 
             // ---- Layout: vertically centered, paper left / real right ----
-            const marginTop = 28;
-            const marginBottom = 28;
+            const marginTop = 18;
+            const marginBottom = 18;
             const usableH = CANVAS_H - marginTop - marginBottom;
 
             // Paper area (left ~40%)
             const paperAreaX = 120;
-            const paperAreaW = 260;
-            const paperAreaH = usableH * 0.82;
+            const paperAreaW = 270;
+            const paperAreaH = usableH * 0.90;
             const paperAreaY = marginTop + (usableH - paperAreaH) / 2;
 
             // Paper within its area (fit proportionally)
             const paperAspect = paperCmH / paperCmW;
             let paperW_px, paperH_px;
             if (paperAreaW / paperAreaH > paperAspect) {
-                paperH_px = paperAreaH * 0.82;
+                paperH_px = paperAreaH * 0.86;
                 paperW_px = paperH_px / paperAspect;
             } else {
-                paperW_px = paperAreaW * 0.82;
+                paperW_px = paperAreaW * 0.86;
                 paperH_px = paperW_px * paperAspect;
             }
             const paperX = paperAreaX + (paperAreaW - paperW_px) / 2;
@@ -785,14 +785,14 @@
             // Real world area (right ~55%)
             const realAreaX = paperAreaX + paperAreaW + 50;
             const realAreaW = CANVAS_W - realAreaX - 24;
-            const realAreaH = usableH * 0.82;
+            const realAreaH = usableH * 0.90;
             const realAreaY = marginTop + (usableH - realAreaH) / 2;
 
             // Real object within its area
             const realAspect = realW / realL;
             let realObjW_px, realObjH_px;
-            const maxRealW = realAreaW * 0.72;
-            const maxRealH = realAreaH * 0.72;
+            const maxRealW = realAreaW * 0.80;
+            const maxRealH = realAreaH * 0.80;
             if (maxRealW / maxRealH > realAspect) {
                 realObjH_px = maxRealH;
                 realObjW_px = realObjH_px * realAspect;
@@ -814,9 +814,9 @@
 
             // Paper area label (just above paper)
             ctx.fillStyle = '#555';
-            ctx.font = 'bold 14px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = 'bold 18px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(t('canvas.paper') + ' (' + paperCmH + 'cm × ' + paperCmW + 'cm)', paperX + paperW_px / 2, paperY - 12);
+            ctx.fillText(t('canvas.paper') + ' (' + paperCmH + 'cm × ' + paperCmW + 'cm)', paperX + paperW_px / 2, paperY - 14);
 
             // Paper shadow
             ctx.fillStyle = 'rgba(0,0,0,0.08)';
@@ -871,7 +871,7 @@
             if (!fitsBoth) {
                 const overColor = 'rgba(231, 76, 60, 0.50)';
                 const overStroke = '#c0392b';
-                ctx.font = 'bold 11px "Microsoft YaHei", "Segoe UI", sans-serif';
+                ctx.font = 'bold 14px "Microsoft YaHei", "Segoe UI", sans-serif';
                 ctx.textAlign = 'center';
 
                 if (objY < paperY) {
@@ -882,9 +882,9 @@
                     ctx.strokeStyle = overStroke;
                     ctx.lineWidth = 1.5;
                     ctx.strokeRect(objX, objY, objW_px, oh);
-                    if (oh > 16) {
+                    if (oh > 20) {
                         ctx.fillStyle = '#fff';
-                        ctx.fillText('⬆ ' + t('canvas.overflow'), objX + objW_px / 2, objY + oh / 2 + 4);
+                        ctx.fillText('⬆ ' + t('canvas.overflow'), objX + objW_px / 2, objY + oh / 2 + 5);
                     }
                 }
                 if (objY + objH_px > paperY + paperH_px) {
@@ -896,9 +896,9 @@
                     ctx.strokeStyle = overStroke;
                     ctx.lineWidth = 1.5;
                     ctx.strokeRect(objX, oTop, objW_px, oh);
-                    if (oh > 16) {
+                    if (oh > 20) {
                         ctx.fillStyle = '#fff';
-                        ctx.fillText('⬇ ' + t('canvas.overflow'), objX + objW_px / 2, oTop + oh / 2 + 4);
+                        ctx.fillText('⬇ ' + t('canvas.overflow'), objX + objW_px / 2, oTop + oh / 2 + 5);
                     }
                 }
                 if (objX < paperX) {
@@ -912,9 +912,9 @@
                         ctx.strokeStyle = overStroke;
                         ctx.lineWidth = 1.5;
                         ctx.strokeRect(objX, cTop, ow, cH);
-                        if (ow > 24) {
+                        if (ow > 30) {
                             ctx.fillStyle = '#fff';
-                            ctx.fillText(t('canvas.overflow'), objX + ow / 2, cTop + cH / 2 + 4);
+                            ctx.fillText(t('canvas.overflow'), objX + ow / 2, cTop + cH / 2 + 5);
                         }
                     }
                 }
@@ -930,9 +930,9 @@
                         ctx.strokeStyle = overStroke;
                         ctx.lineWidth = 1.5;
                         ctx.strokeRect(oLeft, cTop, ow, cH);
-                        if (ow > 24) {
+                        if (ow > 30) {
                             ctx.fillStyle = '#fff';
-                            ctx.fillText(t('canvas.overflow'), oLeft + ow / 2, cTop + cH / 2 + 4);
+                            ctx.fillText(t('canvas.overflow'), oLeft + ow / 2, cTop + cH / 2 + 5);
                         }
                     }
                 }
@@ -940,11 +940,11 @@
 
             // ---- Object Dimension Labels (compact) ----
             ctx.fillStyle = '#2d3436';
-            ctx.font = 'bold 12px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = 'bold 16px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
 
             // Length label on left
-            const labelLX = Math.max(8, objX - 30);
+            const labelLX = Math.max(8, objX - 42);
             const labelLY = objY + objH_px / 2;
             ctx.fillText(t('canvas.length') + ' ' + scaledObjL_cm.toFixed(1) + 'cm', labelLX, labelLY);
             ctx.strokeStyle = '#aaa';
@@ -957,7 +957,7 @@
             ctx.setLineDash([]);
 
             // Width label on bottom
-            const labelWY = Math.min(CANVAS_H - 8, objY + objH_px + 20);
+            const labelWY = Math.min(CANVAS_H - 10, objY + objH_px + 26);
             ctx.fillText(t('canvas.width') + ' ' + scaledObjW_cm.toFixed(1) + 'cm', objX + objW_px / 2, labelWY);
             ctx.strokeStyle = '#aaa';
             ctx.lineWidth = 0.8;
@@ -970,7 +970,7 @@
 
             // ---- Paper Dimension Annotations ----
             ctx.fillStyle = '#888';
-            ctx.font = '10px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = '14px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(paperCmH + 'cm', paperX + paperW_px + 6, paperY + paperH_px / 2);
             ctx.textAlign = 'center';
@@ -978,7 +978,7 @@
 
             // ---- Real World Label ----
             ctx.fillStyle = '#555';
-            ctx.font = 'bold 14px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = 'bold 18px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(t('canvas.real'), realAreaX + realAreaW / 2, realObjY - 50);
 
@@ -993,10 +993,10 @@
 
             // Real object labels
             ctx.fillStyle = '#2d3436';
-            ctx.font = 'bold 13px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = 'bold 17px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(t('canvas.length') + ' ' + realL + 'm', realObjX + realObjW_px / 2, realObjY - 8);
-            ctx.fillText(t('canvas.width') + ' ' + realW + 'm', realObjX + realObjW_px + 16, realObjY + realObjH_px / 2);
+            ctx.fillText(t('canvas.length') + ' ' + realL + 'm', realObjX + realObjW_px / 2, realObjY - 10);
+            ctx.fillText(t('canvas.width') + ' ' + realW + 'm', realObjX + realObjW_px + 18, realObjY + realObjH_px / 2);
 
             // ---- Connecting Arrow (paper center → real object center) ----
             const arrowStartX = paperX + paperW_px + 8;
@@ -1019,17 +1019,17 @@
                 ctx.closePath();
                 ctx.fill();
                 ctx.fillStyle = '#6c5ce7';
-                ctx.font = 'bold 13px "Microsoft YaHei", "Segoe UI", sans-serif';
+                ctx.font = 'bold 17px "Microsoft YaHei", "Segoe UI", sans-serif';
                 ctx.textAlign = 'center';
                 const midX = (arrowStartX + arrowEndX) / 2;
-                ctx.fillText('1:' + currentScale, midX, arrowY - 14);
-                ctx.fillText(t('canvas.scale'), midX, arrowY + 20);
+                ctx.fillText('1:' + currentScale, midX, arrowY - 16);
+                ctx.fillText(t('canvas.scale'), midX, arrowY + 22);
             }
 
             // ---- Fit Status Badge (bottom center) ----
             const badgeX = CANVAS_W / 2;
             const badgeY = CANVAS_H - 6;
-            ctx.font = 'bold 16px "Microsoft YaHei", "Segoe UI", sans-serif';
+            ctx.font = 'bold 22px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
             if (fitsBoth) {
                 ctx.fillStyle = '#27ae60';
