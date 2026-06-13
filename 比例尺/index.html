@@ -190,6 +190,42 @@
             color: #00897b;
         }
 
+        .select-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .select-group {
+            flex: 1;
+            min-width: 180px;
+        }
+        .select-group label {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        .select-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-size: 0.9em;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color 0.2s;
+            appearance: auto;
+        }
+        .select-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
         /* ===== Info Cards ===== */
         .info-cards {
             display: grid;
@@ -346,7 +382,16 @@
         <div class="section-card">
             <h2><span class="icon">🎮</span> <span id="secExplorerTitle">互动探索：调节比例尺试试吧！</span></h2>
 
-            <div class="scenario-btns" id="scenarioBtns"></div>
+            <div class="select-row">
+                <div class="select-group">
+                    <label id="labelPaperSelect">📐 选择图纸</label>
+                    <select id="paperSelect"></select>
+                </div>
+                <div class="select-group">
+                    <label id="labelScenarioSelect">📌 选择场景</label>
+                    <select id="scenarioSelect"></select>
+                </div>
+            </div>
 
             <div class="canvas-wrapper">
                 <canvas id="mainCanvas"></canvas>
@@ -356,10 +401,6 @@
                 <div class="control-group">
                     <label id="labelScale">🔧 比例尺 1:<span id="scaleDisplay">300</span></label>
                     <input type="range" id="scaleSlider" min="50" max="1000" value="300" step="10">
-                </div>
-                <div class="control-group" id="customDims" style="display:none;">
-                    <label id="labelCustomL">长(m): <input type="number" id="customL" value="60" min="5" max="500" style="width:70px;"></label>
-                    <label id="labelCustomW">宽(m): <input type="number" id="customW" value="40" min="5" max="500" style="width:70px;"></label>
                 </div>
             </div>
 
@@ -415,12 +456,12 @@
 
                 // Controls
                 'label.scale': '🔧 比例尺 1:',
-                'label.customL': '实际长(m):',
-                'label.customW': '实际宽(m):',
                 'label.paperSize': '📏 图纸尺寸',
                 'label.realObj': '🏗️ 实际物体',
                 'label.fit': '📋 能否画下？',
                 'label.minScale': '📐 最小比例尺',
+                'label.scenarioSelect': '📌 选择场景',
+                'label.paperSelect': '📐 选择图纸',
                 'fit.yes': '✅ 可以！',
                 'fit.no': '❌ 不行',
 
@@ -441,12 +482,17 @@
                 'canvas.nofit': '❌ 画不下！',
                 'canvas.nofitSub': '部分区域超出图纸',
 
-                // Scenario buttons
+                // Scenario select
                 'scenario.0': '🏟️ 操场 80m×50m',
                 'scenario.1': '🏊 游泳池 50m×25m',
                 'scenario.2': '🌻 花园 30m×30m',
                 'scenario.3': '🏫 教学楼 90m×20m',
-                'scenario.4': '🎨 自定义',
+
+                // Paper type select
+                'paper.0': '📄 A4纸 30cm×21cm（标准）',
+                'paper.1': '⬜ 正方形纸 25cm×25cm',
+                'paper.2': '▬ 长条纸 30cm×12cm',
+                'paper.3': '▬ 宽幅纸 35cm×28cm',
 
                 // Quiz header
                 'quiz.hint': '仔细阅读每个题目，注意长和宽都要检查哦！',
@@ -525,12 +571,12 @@
                 'keypoint.text': 'The paper and the real object often have <strong>different aspect ratios</strong>! You MUST check <strong>BOTH length and width</strong> — checking only one direction is not enough!',
 
                 'label.scale': '🔧 Scale 1:',
-                'label.customL': 'Length (m):',
-                'label.customW': 'Width (m):',
                 'label.paperSize': '📏 Paper Size',
                 'label.realObj': '🏗️ Real Object',
                 'label.fit': '📋 Does it fit?',
                 'label.minScale': '📐 Min Scale Needed',
+                'label.scenarioSelect': '📌 Choose Scene',
+                'label.paperSelect': '📐 Choose Paper',
                 'fit.yes': '✅ Yes!',
                 'fit.no': '❌ No',
 
@@ -553,7 +599,11 @@
                 'scenario.1': '🏊 Pool 50m×25m',
                 'scenario.2': '🌻 Garden 30m×30m',
                 'scenario.3': '🏫 Building 90m×20m',
-                'scenario.4': '🎨 Custom',
+
+                'paper.0': '📄 A4 Paper 30cm×21cm (Standard)',
+                'paper.1': '⬜ Square Paper 25cm×25cm',
+                'paper.2': '▬ Strip Paper 30cm×12cm',
+                'paper.3': '▬ Wide Paper 35cm×28cm',
 
                 'quiz.hint': 'Read each question carefully — remember to check BOTH length and width!',
 
@@ -673,8 +723,8 @@
             document.getElementById('labelRealObj').textContent = t('label.realObj');
             document.getElementById('labelFit').textContent = t('label.fit');
             document.getElementById('labelMinScale').textContent = t('label.minScale');
-            document.getElementById('labelCustomL').innerHTML = t('label.customL') + ' <input type="number" id="customL" value="60" min="5" max="500" style="width:70px;">';
-            document.getElementById('labelCustomW').innerHTML = t('label.customW') + ' <input type="number" id="customW" value="40" min="5" max="500" style="width:70px;">';
+            document.getElementById('labelScenarioSelect').textContent = t('label.scenarioSelect');
+            document.getElementById('labelPaperSelect').textContent = t('label.paperSelect');
 
             // Quiz section
             document.getElementById('secQuizTitle').textContent = t('sec.quiz');
@@ -691,8 +741,9 @@
                 tipsList.appendChild(li);
             }
 
-            // Re-render scenario buttons
-            renderScenarioBtns();
+            // Re-render selects
+            renderScenarioSelect();
+            renderPaperSelect();
 
             // Rebuild quiz
             buildQuiz();
@@ -703,16 +754,22 @@
 
         // ============ SCENARIO DATA ============
         const scenarios = [
-            { nameKey: 'scenario.0', realL: 80, realW: 50, paperL: 30, paperW: 21 },
-            { nameKey: 'scenario.1', realL: 50, realW: 25, paperL: 30, paperW: 21 },
-            { nameKey: 'scenario.2', realL: 30, realW: 30, paperL: 30, paperW: 21 },
-            { nameKey: 'scenario.3', realL: 90, realW: 20, paperL: 30, paperW: 21 },
-            { nameKey: 'scenario.4', realL: 60, realW: 40, paperL: 30, paperW: 21 },
+            { nameKey: 'scenario.0', realL: 80, realW: 50 },
+            { nameKey: 'scenario.1', realL: 50, realW: 25 },
+            { nameKey: 'scenario.2', realL: 30, realW: 30 },
+            { nameKey: 'scenario.3', realL: 90, realW: 20 },
+        ];
+
+        const paperTypes = [
+            { nameKey: 'paper.0', paperL: 30, paperW: 21 },  // A4
+            { nameKey: 'paper.1', paperL: 25, paperW: 25 },  // Square
+            { nameKey: 'paper.2', paperL: 30, paperW: 12 },  // Strip
+            { nameKey: 'paper.3', paperL: 35, paperW: 28 },  // Wide
         ];
 
         let currentScenario = 0;
         let currentScale = 300;
-        let isCustom = false;
+        let currentPaper = 0;
 
         // ============ CANVAS (Responsive) ============
         const canvas = document.getElementById('mainCanvas');
@@ -743,10 +800,12 @@
         function draw() {
             ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
             const s = scenarios[currentScenario];
-            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
-            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
-            const paperCmH = s.paperL;
-            const paperCmW = s.paperW;
+            const realL = s.realL;
+            const realW = s.realW;
+            const pL = paperTypes[currentPaper].paperL;
+            const pW = paperTypes[currentPaper].paperW;
+            const paperCmH = pL;
+            const paperCmW = pW;
 
             // ---- Layout: vertically centered, paper left / real right ----
             const marginTop = 18;
@@ -759,7 +818,7 @@
             const paperAreaH = usableH * 0.90;
             const paperAreaY = marginTop + (usableH - paperAreaH) / 2;
 
-            // Paper within its area (fit proportionally)
+            // Paper within its area (fit proportionally, constrained by both axes)
             const paperAspect = paperCmH / paperCmW;
             let paperW_px, paperH_px;
             if (paperAreaW / paperAreaH > paperAspect) {
@@ -767,6 +826,15 @@
                 paperW_px = paperH_px / paperAspect;
             } else {
                 paperW_px = paperAreaW * 0.86;
+                paperH_px = paperW_px * paperAspect;
+            }
+            // Ensure paper fits within area on both axes
+            if (paperH_px > paperAreaH) {
+                paperH_px = paperAreaH;
+                paperW_px = paperH_px / paperAspect;
+            }
+            if (paperW_px > paperAreaW) {
+                paperW_px = paperAreaW;
                 paperH_px = paperW_px * paperAspect;
             }
             const paperX = paperAreaX + (paperAreaW - paperW_px) / 2;
@@ -788,7 +856,7 @@
             const realAreaH = usableH * 0.90;
             const realAreaY = marginTop + (usableH - realAreaH) / 2;
 
-            // Real object within its area
+            // Real object within its area — short side on x-axis, long side on y-axis
             const realAspect = realW / realL;
             let realObjW_px, realObjH_px;
             const maxRealW = realAreaW * 0.80;
@@ -943,7 +1011,7 @@
             ctx.font = 'bold 16px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
 
-            // Length label on left
+            // 长 (vertical, on left)
             const labelLX = Math.max(8, objX - 42);
             const labelLY = objY + objH_px / 2;
             ctx.fillText(t('canvas.length') + ' ' + scaledObjL_cm.toFixed(1) + 'cm', labelLX, labelLY);
@@ -956,7 +1024,7 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Width label on bottom
+            // 宽 (horizontal, on bottom)
             const labelWY = Math.min(CANVAS_H - 10, objY + objH_px + 26);
             ctx.fillText(t('canvas.width') + ' ' + scaledObjW_cm.toFixed(1) + 'cm', objX + objW_px / 2, labelWY);
             ctx.strokeStyle = '#aaa';
@@ -991,12 +1059,12 @@
             ctx.fillRect(realObjX, realObjY, realObjW_px, realObjH_px);
             ctx.strokeRect(realObjX, realObjY, realObjW_px, realObjH_px);
 
-            // Real object labels
+            // Real object labels — 长 (y-axis, right side), 宽 (x-axis, top)
             ctx.fillStyle = '#2d3436';
             ctx.font = 'bold 17px "Microsoft YaHei", "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(t('canvas.length') + ' ' + realL + 'm', realObjX + realObjW_px / 2, realObjY - 10);
-            ctx.fillText(t('canvas.width') + ' ' + realW + 'm', realObjX + realObjW_px + 18, realObjY + realObjH_px / 2);
+            ctx.fillText(t('canvas.width') + ' ' + realW + 'm', realObjX + realObjW_px / 2, realObjY - 10);
+            ctx.fillText(t('canvas.length') + ' ' + realL + 'm', realObjX + realObjW_px + 18, realObjY + realObjH_px / 2);
 
             // ---- Connecting Arrow (paper center → real object center) ----
             const arrowStartX = paperX + paperW_px + 8;
@@ -1043,10 +1111,10 @@
         // ============ UPDATE UI ============
         function updateUI() {
             const s = scenarios[currentScenario];
-            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
-            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
-            const paperL = s.paperL;
-            const paperW = s.paperW;
+            const realL = s.realL;
+            const realW = s.realW;
+            const paperL = paperTypes[currentPaper].paperL;
+            const paperW = paperTypes[currentPaper].paperW;
 
             document.getElementById('scaleDisplay').textContent = currentScale;
             document.getElementById('scaleSlider').value = currentScale;
@@ -1111,40 +1179,61 @@
             draw();
         }
 
-        // ============ SCENARIO BUTTONS ============
-        function renderScenarioBtns() {
-            const container = document.getElementById('scenarioBtns');
-            container.innerHTML = '';
+        // ============ SCENARIO SELECT ============
+        function renderScenarioSelect() {
+            const sel = document.getElementById('scenarioSelect');
+            sel.innerHTML = '';
             scenarios.forEach((s, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'scenario-btn' + (i === currentScenario ? ' active' : '');
-                btn.dataset.scenario = i;
-                btn.textContent = t(s.nameKey);
-                container.appendChild(btn);
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = t(s.nameKey);
+                sel.appendChild(opt);
             });
+            sel.value = currentScenario;
         }
 
-        document.getElementById('scenarioBtns').addEventListener('click', function(e) {
-            const btn = e.target.closest('.scenario-btn');
-            if (!btn) return;
-            selectScenario(parseInt(btn.dataset.scenario));
+        document.getElementById('scenarioSelect').addEventListener('change', function() {
+            selectScenario(parseInt(this.value));
         });
 
         function selectScenario(idx) {
             currentScenario = idx;
-            isCustom = (idx === 4);
-            document.getElementById('customDims').style.display = isCustom ? 'flex' : 'none';
-
-            document.querySelectorAll('.scenario-btn').forEach((b, i) => {
-                b.classList.toggle('active', i === idx);
-            });
-
             const s = scenarios[idx];
-            const realL = isCustom ? (parseInt(document.getElementById('customL')?.value) || 60) : s.realL;
-            const realW = isCustom ? (parseInt(document.getElementById('customW')?.value) || 40) : s.realW;
+            const paperL = paperTypes[currentPaper].paperL;
+            const paperW = paperTypes[currentPaper].paperW;
             const minScale = Math.max(
-                Math.ceil(realL * 100 / s.paperL),
-                Math.ceil(realW * 100 / s.paperW)
+                Math.ceil(s.realL * 100 / paperL),
+                Math.ceil(s.realW * 100 / paperW)
+            );
+            currentScale = Math.max(50, Math.ceil((minScale + 20) / 10) * 10);
+            updateUI();
+        }
+
+        // ============ PAPER TYPE SELECT ============
+        function renderPaperSelect() {
+            const sel = document.getElementById('paperSelect');
+            sel.innerHTML = '';
+            paperTypes.forEach((p, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = t(p.nameKey);
+                sel.appendChild(opt);
+            });
+            sel.value = currentPaper;
+        }
+
+        document.getElementById('paperSelect').addEventListener('change', function() {
+            selectPaper(parseInt(this.value));
+        });
+
+        function selectPaper(idx) {
+            currentPaper = idx;
+            const s = scenarios[currentScenario];
+            const paperL = paperTypes[currentPaper].paperL;
+            const paperW = paperTypes[currentPaper].paperW;
+            const minScale = Math.max(
+                Math.ceil(s.realL * 100 / paperL),
+                Math.ceil(s.realW * 100 / paperW)
             );
             currentScale = Math.max(50, Math.ceil((minScale + 20) / 10) * 10);
             updateUI();
@@ -1154,13 +1243,6 @@
         document.getElementById('scaleSlider').addEventListener('input', function() {
             currentScale = parseInt(this.value);
             updateUI();
-        });
-
-        // Custom dims listeners (delegated since inputs are recreated)
-        document.addEventListener('input', function(e) {
-            if ((e.target.id === 'customL' || e.target.id === 'customW') && isCustom) {
-                updateUI();
-            }
         });
 
         // ============ QUIZ ============
@@ -1225,11 +1307,13 @@
                 quizScoreCount++;
                 qDiv.classList.add('correct');
                 fb.className = 'quiz-feedback show correct-fb';
+                fb.textContent = t('q' + qi + '.explanation');
             } else {
                 qDiv.classList.add('wrong');
                 fb.className = 'quiz-feedback show wrong-fb';
+                const explanation = t('q' + qi + '.explanation');
+                fb.textContent = explanation.replace(/^✅ 正确！/, '❌ 答错了！').replace(/^✅ Correct!/, '❌ Wrong!');
             }
-            fb.textContent = t('q' + qi + '.explanation');
 
             if (quizAnswered.length === 5) showFinalScore();
         }
@@ -1264,13 +1348,7 @@
             setupCanvas();
             setLang(detectLang());
             selectScenario(0);
-
-            // Re-bind custom inputs after initial render
-            document.addEventListener('input', function(e) {
-                if ((e.target.id === 'customL' || e.target.id === 'customW') && isCustom) {
-                    updateUI();
-                }
-            });
+            selectPaper(0);
         }
 
         // Responsive: use ResizeObserver on canvas wrapper (with fallback)
